@@ -61,8 +61,11 @@ const createTavilyTool = () => {
   return tool(async ({ query }) => {
     try {
       const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
-      const response = await tvly.search(query, { maxResults: 3 });
-      return JSON.stringify(response.results);
+      const response = await tvly.search(query, { maxResults: 3, includeImageUrls: true });
+      return JSON.stringify({ 
+        results: response.results, 
+        images: response.images || [] 
+      });
     } catch (e) {
       return "Search failed: " + e.message;
     }
@@ -234,8 +237,11 @@ Valid XML Blocks (append these at the absolute end of your message, after all yo
 4. <market_metrics><market_size>...</market_size><growth_rate>...</growth_rate><competitors>...</competitors><trends>...</trends></market_metrics>
 5. <sources><source><name>...</name><url>...</url></source></sources>
 6. <company_contact><company_name>...</company_name><website>...</website><location>...</location><phone>...</phone><email>...</email><contact_page>...</contact_page><linkedin>...</linkedin><confidence>...</confidence></company_contact>
+7. <media_gallery><image><url>...</url><title>...</title><domain>...</domain></image></media_gallery>
 
-IMPORTANT: For company_contact, only use publicly available info. If information cannot be verified, output "Not publicly available." The confidence field should be "High", "Medium", or "Low".
+IMPORTANT RULES FOR STRUCTURED BLOCKS:
+- For company_contact, only use publicly available info. If information cannot be verified, output "Not publicly available." The confidence field should be "High", "Medium", or "Low".
+- For media_gallery, you MUST ALWAYS include this block automatically when researching a company. Use the tavily_search tool to find high-quality images of the company (Logo, Headquarters, Products). Include 4 to 8 images. DO NOT hallucinate image URLs, they must be real URLs extracted from search results.
 
 You can include multiple XML blocks if necessary, but they MUST be at the end. Do NOT wrap your entire response in XML.
 

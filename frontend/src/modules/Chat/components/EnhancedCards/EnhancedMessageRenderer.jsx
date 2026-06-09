@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CompanyOverviewCard, SWOTCard, ComparisonTable, MarketMetricsCard, SourcesCard, CompanyContactCard } from './EnhancedCards';
+import { MediaGallery } from './MediaGallery';
 
 // Simple helper to extract content between XML tags
 const extractTag = (text, tag) => {
@@ -29,12 +30,22 @@ const EnhancedMessageRenderer = ({ content }) => {
     let markdown = content || '';
     const data = {};
 
-    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact)>/i);
+    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact|media_gallery)>/i);
     
     let xmlSection = '';
     if (firstTagIndex !== -1) {
       xmlSection = markdown.substring(firstTagIndex);
       markdown = markdown.substring(0, firstTagIndex).trim();
+    }
+
+    // Parse Media Gallery
+    const mediaItems = extractItems(xmlSection, 'media_gallery', 'image');
+    if (mediaItems.length > 0) {
+      data.media = mediaItems.map(imgStr => ({
+        url: extractTag(imgStr, 'url'),
+        title: extractTag(imgStr, 'title'),
+        domain: extractTag(imgStr, 'domain')
+      }));
     }
 
     // Parse Company Contact
@@ -112,6 +123,7 @@ const EnhancedMessageRenderer = ({ content }) => {
     <div className="flex flex-col w-full gap-3">
       {/* 1. Enhanced UI Cards (Rendered above the text) */}
       <div className="flex flex-col gap-3 ml-2 mr-2">
+        {parsedData.media && <MediaGallery data={parsedData.media} />}
         {parsedData.contact && <CompanyContactCard data={parsedData.contact} />}
         {parsedData.company && <CompanyOverviewCard data={parsedData.company} />}
         {parsedData.swot && <SWOTCard data={parsedData.swot} />}

@@ -74,13 +74,13 @@
     opacity: 1;
   }
   50% {
-    transform: scale(0.95);
-    opacity: 0.85;
+    transform: scale(1.1);
+    opacity: 0.8;
   }
 }
 
 .animate-sphere-listening {
-  animation: listeningSpin 15s linear infinite, listeningPulse 3s ease-in-out infinite;
+  animation: listeningSpin 10s linear infinite, listeningPulse 2s ease-in-out infinite;
 }
 
 @keyframes statusFade {
