@@ -2,6 +2,7 @@ import React from 'react';
 import SidebarHeader from './components/SidebarHeader';
 import NewChatButton from './components/NewChatButton';
 import RecentChatList from './components/RecentChatList';
+import RecentDocumentsList from './components/RecentDocumentsList';
 import IntegrationList from './components/IntegrationList';
 import ProfileFooter from './components/ProfileFooter';
 import { Plus, Search, MessageSquare, Settings } from 'lucide-react';
@@ -104,11 +105,12 @@ const Sidebar = ({ currentChatId, onSelectChat, refreshTrigger, isOpen, onClose,
             </div>
 
             <div className="mt-6 flex flex-col gap-6">
-              <RecentChatList 
-                currentChatId={currentChatId} 
-                onSelectChat={onSelectChat} 
-                refreshTrigger={refreshTrigger} 
+              <RecentChatList
+                currentChatId={currentChatId}
+                onSelectChat={onSelectChat}
+                refreshTrigger={refreshTrigger}
               />
+              <RecentDocumentsList />
               <IntegrationList />
             </div>
           </div>

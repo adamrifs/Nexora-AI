@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Copy, Check } from 'lucide-react';
+import { Edit, Copy, Check, FileText } from 'lucide-react';
 
 const MessageBubble = ({ role, text, children }) => {
   const isUser = role === 'user';
@@ -16,11 +16,30 @@ const MessageBubble = ({ role, text, children }) => {
   };
 
   if (isUser) {
+    let fileName = null;
+    let mainText = text;
+    const fileMatch = text.match(/^📎 \*\*(.+?)\*\*(?:\n\n([\s\S]*))?$/);
+    if (fileMatch) {
+      fileName = fileMatch[1];
+      mainText = fileMatch[2] || '';
+    }
+
     return (
       <div className="group flex flex-col items-end w-full mb-6">
         {/* Message Bubble */}
-        <div className="bg-white/60 backdrop-blur-md text-gray-800 px-6 py-3.5 rounded-[2rem] rounded-tr-sm shadow-sm border border-white/50 max-w-[80%]">
-          <p className="text-[15px] font-medium leading-relaxed break-words">{text}</p>
+        <div className="bg-white/60 backdrop-blur-md text-gray-800 px-6 py-4 rounded-[2.5rem] rounded-tr-md shadow-sm border border-white/50 max-w-[80%]">
+          {fileName && (
+            <div className={`flex items-center gap-3 bg-white/80 border border-gray-100 shadow-sm rounded-2xl p-2.5 max-w-sm ${mainText ? 'mb-3' : ''}`}>
+               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                 <FileText className="w-5 h-5 text-[#8C52FF]" />
+               </div>
+               <div className="flex-1 min-w-0 pr-2">
+                 <p className="text-[14px] font-semibold text-gray-800 truncate">{fileName}</p>
+                 <p className="text-[11px] text-gray-400 font-medium tracking-wide uppercase">Document</p>
+               </div>
+            </div>
+          )}
+          {mainText && <p className="text-[15px] font-medium leading-relaxed break-words whitespace-pre-wrap">{mainText}</p>}
         </div>
         
         {/* Action Buttons (Copy/Edit) under the bubble */}

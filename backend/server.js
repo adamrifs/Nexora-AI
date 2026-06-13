@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const integrationRoutes = require('./routes/integrations');
 const memoryRoutes = require('./routes/memory');
+const documentRoutes = require('./routes/documents');
 
 // Connect to database
 connectDB();
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/memory', memoryRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CompanyOverviewCard, SWOTCard, ComparisonTable, MarketMetricsCard, SourcesCard, CompanyContactCard } from './EnhancedCards';
 import { MediaGallery } from './MediaGallery';
+import { RisksCard, OpportunitiesCard } from './DocumentCards';
 
 // Simple helper to extract content between XML tags
 const extractTag = (text, tag) => {
@@ -30,7 +31,7 @@ const EnhancedMessageRenderer = ({ content }) => {
     let markdown = content || '';
     const data = {};
 
-    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact|media_gallery)>/i);
+    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact|media_gallery|doc_risks|doc_opportunities)>/i);
     
     let xmlSection = '';
     if (firstTagIndex !== -1) {
@@ -116,6 +117,18 @@ const EnhancedMessageRenderer = ({ content }) => {
       }));
     }
 
+    // Parse Document Risks
+    const riskItems = extractItems(xmlSection, 'doc_risks', 'risk');
+    if (riskItems.length > 0) {
+      data.docRisks = riskItems;
+    }
+
+    // Parse Document Opportunities
+    const oppItems = extractItems(xmlSection, 'doc_opportunities', 'opportunity');
+    if (oppItems.length > 0) {
+      data.docOpportunities = oppItems;
+    }
+
     return { cleanMarkdown: markdown, parsedData: data };
   }, [content]);
 
@@ -136,8 +149,10 @@ const EnhancedMessageRenderer = ({ content }) => {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanMarkdown}</ReactMarkdown>
       </div>
 
-      {/* 3. Sources Card (Usually kept at the bottom for citation) */}
+      {/* 3. Sources & Document Cards (Kept at the bottom) */}
       <div className="flex flex-col gap-2 ml-2 mr-2">
+        {parsedData.docRisks && <RisksCard risks={parsedData.docRisks} />}
+        {parsedData.docOpportunities && <OpportunitiesCard opportunities={parsedData.docOpportunities} />}
         {parsedData.sources && <SourcesCard data={parsedData.sources} />}
       </div>
     </div>
