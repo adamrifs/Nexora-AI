@@ -110,7 +110,7 @@ const Sidebar = ({ currentChatId, onSelectChat, refreshTrigger, isOpen, onClose,
                 onSelectChat={onSelectChat}
                 refreshTrigger={refreshTrigger}
               />
-              <RecentDocumentsList />
+              <RecentDocumentsList refreshTrigger={refreshTrigger} />
               <IntegrationList />
             </div>
           </div>

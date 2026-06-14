@@ -45,10 +45,14 @@ const connectIntegration = async (req, res) => {
 const getConnectedIntegrations = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    const connections = await composio.connectedAccounts.list({ userId });
+    // IMPORTANT: The SDK requires `userIds` (array), NOT `userId` (singular).
+    // Passing `userId` is silently ignored by the schema, returning ALL accounts.
+    const connections = await composio.connectedAccounts.list({
+      userIds: [userId],
+      statuses: ['ACTIVE']
+    });
     
     const activeIntegrations = connections.items
-      .filter(c => c.status === 'ACTIVE')
       .map(c => c.toolkit?.slug || c.appName);
       
     res.status(200).json([...new Set(activeIntegrations)]);

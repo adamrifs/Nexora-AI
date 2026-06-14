@@ -20,10 +20,11 @@ const ImageViewerModal = ({ image, onClose }) => {
       >
         <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black/50">
           <img 
-            src={image.url} 
-            alt={image.title} 
+            src={image.url || image} 
+            alt={image.title || 'Image'} 
             className="w-full h-auto max-h-[80vh] object-contain"
             loading="lazy"
+            referrerPolicy="no-referrer"
           />
         </div>
         
@@ -35,7 +36,7 @@ const ImageViewerModal = ({ image, onClose }) => {
             </p>
           </div>
           <a 
-            href={image.url} 
+            href={image.url || image} 
             target="_blank" 
             rel="noreferrer"
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -50,22 +51,16 @@ const ImageViewerModal = ({ image, onClose }) => {
 };
 
 // Single Image Card Component
-const ImageCard = ({ image, onClick }) => {
-  const [error, setError] = useState(false);
-
-  if (error) {
-    return (
-      <div className="rounded-xl bg-gray-200 aspect-video flex items-center justify-center border border-black/5">
-        <span className="text-gray-400 text-xs">Image failed to load</span>
-      </div>
-    );
-  }
+const ImageCard = ({ image, onClick, onError }) => {
+  const rawUrl = typeof image === 'string' ? image : image?.url;
+  const url = rawUrl ? rawUrl.replace(/[\n\r\t ]/g, '') : '';
+  const title = image?.title || 'Image';
 
   // Helper to extract domain if missing
   const getDomain = () => {
-    if (image.domain) return image.domain;
+    if (image?.domain) return image.domain;
     try {
-      return new URL(image.url).hostname.replace('www.', '');
+      return new URL(url).hostname.replace('www.', '');
     } catch {
       return 'External Source';
     }
@@ -73,20 +68,21 @@ const ImageCard = ({ image, onClick }) => {
 
   return (
     <div 
-      onClick={() => onClick(image)}
+      onClick={() => onClick({ url, title, domain: getDomain() })}
       className="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 aspect-video shadow-sm hover:shadow-md transition-all duration-300 border border-black/5"
     >
       <img 
-        src={image.url} 
-        alt={image.title}
+        src={url} 
+        alt={title}
         loading="lazy"
-        onError={() => setError(true)}
+        referrerPolicy="no-referrer"
+        onError={() => onError(url)}
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       
       {/* Hover Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-        <h4 className="text-white font-semibold text-sm line-clamp-1">{image.title || 'Image'}</h4>
+        <h4 className="text-white font-semibold text-sm line-clamp-1">{title}</h4>
         <p className="text-white/80 text-[10px] uppercase tracking-wider mt-0.5">{getDomain()}</p>
       </div>
     </div>
@@ -96,10 +92,27 @@ const ImageCard = ({ image, onClick }) => {
 // Main Media Gallery Component
 export const MediaGallery = ({ data }) => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [failedUrls, setFailedUrls] = useState(new Set());
 
   console.log("MediaGallery received data:", data);
 
   if (!data || !Array.isArray(data) || data.length === 0) return null;
+
+  const handleImageError = (url) => {
+    setFailedUrls(prev => {
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  };
+
+  const visibleImages = data.filter(img => {
+    const rawUrl = typeof img === 'string' ? img : img?.url;
+    const url = rawUrl ? rawUrl.replace(/[\n\r\t ]/g, '') : '';
+    return url && !failedUrls.has(url);
+  });
+
+  if (visibleImages.length === 0) return null;
 
   return (
     <div className="mt-4 w-full">
@@ -110,9 +123,15 @@ export const MediaGallery = ({ data }) => {
       
       {/* Image Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {data.map((img, idx) => {
-          console.log("Rendering image:", img.url);
-          return <ImageCard key={idx} image={img} onClick={setSelectedImage} />;
+        {visibleImages.map((img, idx) => {
+          return (
+            <ImageCard 
+              key={idx} 
+              image={img} 
+              onClick={setSelectedImage} 
+              onError={handleImageError} 
+            />
+          );
         })}
       </div>
 

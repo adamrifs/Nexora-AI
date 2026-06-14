@@ -68,7 +68,7 @@ const DownloadPdfButton = ({ contentRef }) => {
   );
 };
 
-const AiMessageContainer = ({ msg }) => {
+const AiMessageContainer = ({ msg, onSendMessage }) => {
   const contentRef = useRef(null);
 
   return (
@@ -82,7 +82,7 @@ const AiMessageContainer = ({ msg }) => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 md:gap-5 items-start max-w-[calc(100%-2.25rem)] md:max-w-[calc(100%-3.5rem)] w-full">
         <div className="flex flex-col items-start gap-1">
           <div ref={contentRef} className="w-full bg-white/40 p-4 rounded-[34px]">
-            <EnhancedMessageRenderer content={msg.content} />
+            <EnhancedMessageRenderer content={msg.content} onSendMessage={onSendMessage} />
           </div>
           <div className="flex items-center gap-1 ml-2">
             <CopyButton text={msg.content} />
@@ -109,7 +109,7 @@ const AiMessageContainer = ({ msg }) => {
   );
 };
 
-const ChatWindow = ({ isListening, messages = [], streamingMessage = '', agentStatus = null }) => {
+const ChatWindow = ({ isListening, messages = [], streamingMessage = '', agentStatus = null, onSendMessage }) => {
   const bottomRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
@@ -154,7 +154,7 @@ const ChatWindow = ({ isListening, messages = [], streamingMessage = '', agentSt
           return <MessageBubble key={msg._id || index} role="user" text={msg.content} />;
         }
         
-        return <AiMessageContainer key={msg._id || index} msg={msg} />;
+        return <AiMessageContainer key={msg._id || index} msg={msg} onSendMessage={onSendMessage} />;
       })}
 
       {/* Streaming Message Indicator */}
@@ -164,8 +164,7 @@ const ChatWindow = ({ isListening, messages = [], streamingMessage = '', agentSt
             <img src={sphere} alt="AI" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 md:gap-5 items-start max-w-[calc(100%-2.25rem)] md:max-w-[calc(100%-3.5rem)] w-full">
-            <EnhancedMessageRenderer content={streamingMessage} />
-            <span className="inline-block w-1.5 h-4 ml-1 bg-gray-400 animate-pulse rounded-full align-middle mt-2"></span>
+            <EnhancedMessageRenderer content={streamingMessage} isStreaming={true} onSendMessage={onSendMessage} />
           </div>
         </div>
       )}

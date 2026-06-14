@@ -24,7 +24,7 @@ const DocumentContextBanner = ({ documentTitle, onClear }) => (
 );
 
 // ─── ChatPage ─────────────────────────────────────────────────────────────────
-const Chat = ({ currentChatId, onChatCreated, onMenuClick }) => {
+const Chat = ({ currentChatId, onChatCreated, onDocumentCreated, onMenuClick }) => {
   const [isListening, setIsListening]         = useState(false);
   const [messages, setMessages]               = useState([]);
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -251,6 +251,9 @@ const Chat = ({ currentChatId, onChatCreated, onMenuClick }) => {
       const streamedContent = await readSSEStream(response, abortController, (docId, title) => {
         setDocumentId(docId);
         setDocumentTitle(title);
+        if (onDocumentCreated) {
+          onDocumentCreated();
+        }
       });
 
       // Finalize
@@ -294,6 +297,7 @@ const Chat = ({ currentChatId, onChatCreated, onMenuClick }) => {
         messages={messages}
         streamingMessage={streamingMessage}
         agentStatus={agentStatus}
+        onSendMessage={handleSendMessage}
       />
 
       {/* Document Q&A banner */}
@@ -313,7 +317,9 @@ const Chat = ({ currentChatId, onChatCreated, onMenuClick }) => {
         attachedFile={attachedFile}
         onFileSelect={setAttachedFile}
         onRemoveFile={() => setAttachedFile(null)}
+        chatId={currentChatId}
       />
+
     </div>
   );
 };

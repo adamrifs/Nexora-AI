@@ -91,7 +91,7 @@ const IntegrationList = () => {
 
   return (
     <div>
-      <h3 className="text-[#1a1a1a] text-[13px] font-medium tracking-wide mb-3 px-2 uppercase">INTEGRATIONS</h3>
+      <h3 className="text-[#1a1a1a] text-[13px] font-medium tracking-wide mb-3 px-2 uppercase">TOOLS</h3>
       <div className="bg-white/50 backdrop-blur-md rounded-[2rem] py-2 shadow-sm">
         
         <div className="px-2">

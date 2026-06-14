@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { CompanyOverviewCard, SWOTCard, ComparisonTable, MarketMetricsCard, SourcesCard, CompanyContactCard } from './EnhancedCards';
 import { MediaGallery } from './MediaGallery';
 import { RisksCard, OpportunitiesCard } from './DocumentCards';
+import ReportLoader from './ReportLoader';
 
 // Simple helper to extract content between XML tags
 const extractTag = (text, tag) => {
@@ -26,12 +27,20 @@ const extractItems = (text, parentTag, itemTag) => {
   return items;
 };
 
-const EnhancedMessageRenderer = ({ content }) => {
+const EnhancedMessageRenderer = ({ content, isStreaming = false, onSendMessage }) => {
+  // Detect if the AI is generating a structured company report
+  const isReport = content?.includes('Business Report') || content?.includes('Executive Summary');
+
+  // If streaming a report, hide the raw markdown and show a sleek inline loader
+  if (isStreaming && isReport) {
+    return <ReportLoader />;
+  }
+
   const { cleanMarkdown, parsedData } = useMemo(() => {
     let markdown = content || '';
     const data = {};
 
-    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact|media_gallery|doc_risks|doc_opportunities)>/i);
+    const firstTagIndex = markdown.search(/<(company_overview|swot|comparison|market_metrics|sources|company_contact|media_gallery|doc_risks|doc_opportunities|recommended_steps)>/i);
     
     let xmlSection = '';
     if (firstTagIndex !== -1) {
@@ -42,11 +51,18 @@ const EnhancedMessageRenderer = ({ content }) => {
     // Parse Media Gallery
     const mediaItems = extractItems(xmlSection, 'media_gallery', 'image');
     if (mediaItems.length > 0) {
-      data.media = mediaItems.map(imgStr => ({
-        url: extractTag(imgStr, 'url'),
-        title: extractTag(imgStr, 'title'),
-        domain: extractTag(imgStr, 'domain')
-      }));
+      data.media = mediaItems.map(imgStr => {
+        let url = extractTag(imgStr, 'url');
+        // Fallback: If no <url> tag exists, check if the content itself is a URL
+        if (!url && imgStr.startsWith('http')) {
+          url = imgStr;
+        }
+        return {
+          url: url,
+          title: extractTag(imgStr, 'title'),
+          domain: extractTag(imgStr, 'domain')
+        };
+      }).filter(img => img.url); // filter out empty URLs
     }
 
     // Parse Company Contact
@@ -129,6 +145,12 @@ const EnhancedMessageRenderer = ({ content }) => {
       data.docOpportunities = oppItems;
     }
 
+    // Parse Recommended Steps
+    const recItems = extractItems(xmlSection, 'recommended_steps', 'step');
+    if (recItems.length > 0) {
+      data.recommendedSteps = recItems;
+    }
+
     return { cleanMarkdown: markdown, parsedData: data };
   }, [content]);
 
@@ -155,6 +177,22 @@ const EnhancedMessageRenderer = ({ content }) => {
         {parsedData.docOpportunities && <OpportunitiesCard opportunities={parsedData.docOpportunities} />}
         {parsedData.sources && <SourcesCard data={parsedData.sources} />}
       </div>
+
+      {/* 4. Recommended Steps (at the very bottom) */}
+      {parsedData.recommendedSteps && parsedData.recommendedSteps.length > 0 && !isStreaming && (
+        <div className="flex flex-wrap gap-2 mt-1 ml-2 mr-2">
+          {parsedData.recommendedSteps.map((step, idx) => (
+            <button
+              key={idx}
+              onClick={() => onSendMessage && onSendMessage(step)}
+              className="px-4 py-2 bg-white/70 hover:bg-[#8C52FF] border border-[#8C52FF]/30 text-[#8C52FF] hover:text-white text-sm font-medium rounded-full transition-all text-left shadow-sm hover:shadow-md animate-fade-in"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              {step}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

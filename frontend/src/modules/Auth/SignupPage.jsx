@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Mail, Lock, User, Sparkles, ArrowRight } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import InputField from './components/InputField';
+import GlassLoader from './components/GlassLoader';
 import multiSphere from '../../assets/multiSphere.png';
 import sphere from '../../assets/sphere.png';
 
@@ -150,7 +151,7 @@ const SignupPage = () => {
                     disabled={isSubmitting}
                     className="w-full py-4 mt-6 bg-gradient-to-r from-[#1b1238] to-[#3c2a63] hover:from-[#251a3d] hover:to-[#4a347a] text-white rounded-2xl font-semibold transition-all shadow-[0_8px_20px_rgba(27,18,56,0.2)] hover:shadow-[0_8px_25px_rgba(27,18,56,0.3)] disabled:opacity-70 flex justify-center items-center gap-2 group"
                   >
-                    {isSubmitting ? 'Creating account...' : 'Sign Up'}
+                    Sign Up
                     {!isSubmitting && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                   </button>
                 </form>
@@ -165,11 +166,15 @@ const SignupPage = () => {
                 <div className="mt-6 flex justify-center w-full">
                   <GoogleLogin
                     onSuccess={async (credentialResponse) => {
+                      setIsSubmitting(true);
+                      setError('');
                       try {
                         await loginWithGoogle(credentialResponse.credential);
                         navigate('/');
                       } catch (err) {
                         setError(err.response?.data?.message || 'Google signup failed');
+                      } finally {
+                        setIsSubmitting(false);
                       }
                     }}
                     onError={() => setError('Google signup failed')}
@@ -196,6 +201,9 @@ const SignupPage = () => {
         </div>
 
       </div>
+
+      {/* Glassmorphism Loader Overlay */}
+      {isSubmitting && <GlassLoader title="Creating Account" subtitle="Setting up your workspace…" />}
     </div>
   );
 };

@@ -56,6 +56,7 @@ const DashboardLayout = ({ children }) => {
           <Chat
             currentChatId={currentChatId}
             onChatCreated={handleChatCreated}
+            onDocumentCreated={() => setRefreshChatsTrigger(prev => prev + 1)}
             onMenuClick={() => setIsMobileMenuOpen(true)}
           />
         )}

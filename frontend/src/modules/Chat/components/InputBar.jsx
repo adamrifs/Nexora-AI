@@ -48,8 +48,9 @@ const FilePreviewPill = ({ file, onRemove }) => {
 };
 
 // ─── InputBar ─────────────────────────────────────────────────────────────────
-const InputBar = ({ isListening, setIsListening, onSendMessage, disabled, onStop, attachedFile, onFileSelect, onRemoveFile }) => {
+const InputBar = ({ isListening, setIsListening, onSendMessage, disabled, onStop, attachedFile, onFileSelect, onRemoveFile, chatId }) => {
   const [text, setText]       = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef           = useRef(null);
   const fileInputRef          = useRef(null);
 
@@ -59,6 +60,17 @@ const InputBar = ({ isListening, setIsListening, onSendMessage, disabled, onStop
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
     }
   }, [text]);
+
+  // Automatically focus the input field when it becomes enabled, or when a file is attached/removed/chat switches
+  useEffect(() => {
+    if (!disabled && !isListening) {
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [disabled, isListening, attachedFile, chatId]);
+
 
   const handleKeyDown = (e) => {
     if (disabled) return;
@@ -127,7 +139,7 @@ const InputBar = ({ isListening, setIsListening, onSendMessage, disabled, onStop
 
         {/* Textarea */}
         <div className="relative flex-1 flex items-center">
-          {!text && (
+          {!text && (disabled || !isFocused) && (
             <div className="absolute inset-y-0 left-0 px-4 py-2 pointer-events-none flex items-center">
               {disabled ? (
                 <span className="text-[#8C52FF] font-medium text-[15px] animate-typing-loop">
@@ -156,6 +168,8 @@ const InputBar = ({ isListening, setIsListening, onSendMessage, disabled, onStop
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder=""
             rows={1}
             className="w-full relative z-10 bg-transparent border-none focus:outline-none focus:ring-0 text-gray-800 px-4 py-2 text-[15px] disabled:bg-transparent disabled:cursor-not-allowed resize-none overflow-y-auto no-scrollbar"
